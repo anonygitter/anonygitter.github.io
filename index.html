@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Ur Password</title>
+    <style>
+        body { font-family: Arial, sans-serif;padding: 2px; background: rgb(42, 42, 42);}
+        #grid {
+        display: grid;
+        grid-template-columns: repeat(21, 25px);
+        gap: 0;
+        
+    }
+    #grid div {
+        width: 25px;
+        height: 25px;
+        text-align: center;
+        line-height: 25px;
+        border: 1px solid rgb(3, 95, 0);
+        color: rgb(182, 182, 182);
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    #grid div.header {
+        font-weight: bold;
+        background: rgb(2, 64, 0);
+    }
+    </style>
+</head>
+<body>
+<input type="password" id="key" placeholder="Enter key" style="background-color: gray;">
+<div id="grid"></div>
+
+<script>
+const originalString = `5N82cV=y$lifp+xn[]%66oe#04W"GSwszu_A?3P}<t3g:!-hQr*|&7FbC1K2M;Yv9RdB'74H5k,m^TLZOXD>j8@a.I9(0)qE/U{JlFYh7"SgX;#&36P20p5V9>o5_L$yxZcsRO8)Dt0+M]W!CqKG}Nj6d:@Jv[=?8bfzAw'ierIT1,u{*Q43E4-H%Uan7<29/.^k(mB|6,A3}t)m3p;7&w*:[rx_4j-FK#O/elbI+cMy@'58TPLk2Ba$n0=98>Z9o?1h"H64sWNDJUC(zSGVRq{u!gv0|]i2X^Y.E%Q5f7d<ml44r}e%7:8q!Gj_g-6aI5,"#1SX'VTn;HN^&ikw6f3/7QchAu9Wso@2]P9Zy{)bJ.U=5M8(+F$Ez3?*2Bxt0D<RK|CdvYLp[O0>`;// length 400
+
+function shuffleWithKey(str, key) {
+    function hashKey(key) {
+        let hash = 0;
+        for (let i = 0; i < key.length; i++) {
+            hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+        }
+        return hash;
+    }
+    function mulberry32(seed) {
+        return function() {
+            let t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+    }
+    const seed = hashKey(key);
+    const random = mulberry32(seed);
+    const arr = str.split('');
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.join('');
+}
+
+function renderGrid(str) {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    // Top-left empty cell
+    const empty = document.createElement('div');
+    empty.className = 'header';
+    grid.appendChild(empty);
+
+    // Top row numbers 1-20
+    for (let c = 1; c <= 20; c++) {
+        const div = document.createElement('div');
+        div.textContent = c%10;
+        div.className = 'header';
+        grid.appendChild(div);
+    }
+
+    for (let r = 0; r < 20; r++) {
+        // Left column number
+        const rowNum = document.createElement('div');
+        rowNum.textContent = (r + 1)%10;
+        rowNum.className = 'header';
+        grid.appendChild(rowNum);
+
+        for (let c = 0; c < 20; c++) {
+            const charDiv = document.createElement('div');
+            charDiv.textContent = str[r * 20 + c];
+            grid.appendChild(charDiv);
+        }
+    }
+}
+renderGrid(originalString);
+document.getElementById('key').addEventListener('input', (e) => {
+    const key = e.target.value;
+    if (!key) return;
+    const shuffled = shuffleWithKey(originalString, key);
+    renderGrid(shuffled);
+});
+</script>
+</body>
+</html>
