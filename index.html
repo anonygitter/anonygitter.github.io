@@ -3,37 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Ur Password</title>
+    <title>Generate Ur Password</title>
     <style>
-        body { font-family: Arial, sans-serif;padding: 2px; background: rgb(42, 42, 42);}
+        :root {
+            --bg-color: #0a0a0a;
+            --border-color: #003300;
+            --header-bg: #004400;
+            --text-main: #00ff41;
+            --text-dim: #008f11;
+            --cell-size: 28px;
+        }
+
+        body { 
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .controls {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        #key {
+            background: #1a1a1a;
+            border: 1px solid var(--header-bg);
+            color: var(--text-main);
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 4px;
+            outline: none;
+            width: 250px;
+            transition: border 0.3s;
+        }
+
+        #key:focus {
+            border-color: var(--text-main);
+        }
+
+        /* 20 data cols + 1 left header + 1 right header = 22 cols */
         #grid {
-        display: grid;
-        grid-template-columns: repeat(21, 25px);
-        gap: 0;
-        
-    }
-    #grid div {
-        width: 25px;
-        height: 25px;
-        text-align: center;
-        line-height: 25px;
-        border: 1px solid rgb(3, 95, 0);
-        color: rgb(182, 182, 182);
-        font-size: 14px;
-        box-sizing: border-box;
-    }
-    #grid div.header {
-        font-weight: bold;
-        background: rgb(2, 64, 0);
-    }
+            display: grid;
+            grid-template-columns: repeat(22, var(--cell-size));
+            gap: 0;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        #grid div {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            text-align: center;
+            line-height: var(--cell-size);
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        #grid div.header {
+            font-weight: bold;
+            background: var(--header-bg);
+            color: #fff;
+            border-color: var(--header-bg);
+        }
+
+        #grid div.data-cell:hover {
+            background: rgba(0, 255, 65, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-<input type="password" id="key" placeholder="Enter key" style="background-color: gray;">
+
+<div class="controls">
+    <h2>PASSWORD GENERATOR CARD</h2>
+    <input type="password" id="key" placeholder="Enter Secret Key...">
+</div>
+
 <div id="grid"></div>
 
 <script>
 const originalString = `5N82cV=y$lifp+xn[]%66oe#04W"GSwszu_A?3P}<t3g:!-hQr*|&7FbC1K2M;Yv9RdB'74H5k,m^TLZOXD>j8@a.I9(0)qE/U{JlFYh7"SgX;#&36P20p5V9>o5_L$yxZcsRO8)Dt0+M]W!CqKG}Nj6d:@Jv[=?8bfzAw'ierIT1,u{*Q43E4-H%Uan7<29/.^k(mB|6,A3}t)m3p;7&w*:[rx_4j-FK#O/elbI+cMy@'58TPLk2Ba$n0=98>Z9o?1h"H64sWNDJUC(zSGVRq{u!gv0|]i2X^Y.E%Q5f7d<ml44r}e%7:8q!Gj_g-6aI5,"#1SX'VTn;HN^&ikw6f3/7QchAu9Wso@2]P9Zy{)bJ.U=5M8(+F$Ez3?*2Bxt0D<RK|CdvYLp[O0>`;// length 400
+
 
 function shuffleWithKey(str, key) {
     function hashKey(key) {
@@ -61,44 +118,64 @@ function shuffleWithKey(str, key) {
     return arr.join('');
 }
 
+/** * UI RENDERING SECTION
+ */
+function createHeaderCell(content) {
+    const div = document.createElement('div');
+    div.className = 'header';
+    div.textContent = content;
+    return div;
+}
+
 function renderGrid(str) {
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
 
-    // Top-left empty cell
-    const empty = document.createElement('div');
-    empty.className = 'header';
-    grid.appendChild(empty);
-
-    // Top row numbers 1-20
+    // 1. TOP ROW HEADERS
+    grid.appendChild(createHeaderCell('')); // Top-left corner
     for (let c = 1; c <= 20; c++) {
-        const div = document.createElement('div');
-        div.textContent = c%10;
-        div.className = 'header';
-        grid.appendChild(div);
+        grid.appendChild(createHeaderCell(c % 10));
     }
+    grid.appendChild(createHeaderCell('')); // Top-right corner
 
+    // 2. DATA ROWS
     for (let r = 0; r < 20; r++) {
-        // Left column number
-        const rowNum = document.createElement('div');
-        rowNum.textContent = (r + 1)%10;
-        rowNum.className = 'header';
-        grid.appendChild(rowNum);
+        // Left Column Header
+        grid.appendChild(createHeaderCell((r + 1) % 10));
 
+        // Actual Data
         for (let c = 0; c < 20; c++) {
             const charDiv = document.createElement('div');
+            charDiv.className = 'data-cell';
             charDiv.textContent = str[r * 20 + c];
             grid.appendChild(charDiv);
         }
+
+        // Right Column Header
+        grid.appendChild(createHeaderCell((r + 1) % 10));
     }
+
+    // 3. BOTTOM ROW HEADERS
+    grid.appendChild(createHeaderCell('')); // Bottom-left corner
+    for (let c = 1; c <= 20; c++) {
+        grid.appendChild(createHeaderCell(c % 10));
+    }
+    grid.appendChild(createHeaderCell('')); // Bottom-right corner
 }
+
+// Initialization
 renderGrid(originalString);
+
 document.getElementById('key').addEventListener('input', (e) => {
     const key = e.target.value;
-    if (!key) return;
+    if (!key) {
+        renderGrid(originalString);
+        return;
+    }
     const shuffled = shuffleWithKey(originalString, key);
     renderGrid(shuffled);
 });
 </script>
+
 </body>
 </html>
